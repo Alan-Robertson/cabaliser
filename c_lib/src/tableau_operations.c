@@ -916,68 +916,68 @@ void tableau_CNOT(tableau_t* tab, const size_t ctrl, const size_t targ)
     }
 }
 
-void tableau_CZ(tableau_t* tab, const size_t ctrl, const size_t targ)
-{
-    /* CZ = H_b CNOT H_b 
-     * H : (r ^= x.z; x <-> z) 
-     * CNOT a, b: ( 
-     *     r ^= x_a & z_b & ~(x_b ^ z_a);
-     *     x_b ^= x_a;
-     *     z_a ^= z_b) 
-     *
-     * H:
-     * r_1 = r_0 ^ x_b.z_b 
-     * x_a1 = x_a0
-     * x_b1 = z_b0 
-     * z_a1 = z_a0
-     * z_b1 = x_b0 
-     *
-     * CNOT:
-     * r_2 = r_1 ^ (x_a0 & z_b1 & ~(x_b1 ^ z_a0))
-     * r_2 = r_0 ^ (x_b0 & z.b0) ^ (x_a0 & x_b0 & ~(z_b0 ^ z_a0))
-     * x_a2 = x_a1
-     * x_a2 = x_a0 
-     * x_b2 = x_b1 ^ x_a1
-     * x_b2 = z_b0 ^ x_a0
-     * z_a2 = z_a1 ^ z_b1 
-     * z_a2 = z_a0 ^ x_b0 
-     * z_b2 = z_b1
-     * z_b2 = x_b0
-     *
-     * H: 
-     * r_3 = r_2 ^ (x_b2 & z_b2)  
-     * r_3 = r_0 ^ (x_b0 & z_b0) ^ (x_a0 & x_b0 & ~(z_b0 ^ z_a0)) ^ ((z_b0 ^ x_a0) & x_b0); 
-     * x_a3 = x_a2 = x_a0 
-     * x_b3 = z_b2 = x_b0 
-     * z_a3 = z_a2 = z_a0 ^ x_b0 
-     * z_b3 = x_b2 = z_b0 ^ x_a0 
-     *
-     */ 
-
-    CHUNK_OBJ* ctrl_slice_x = (CHUNK_OBJ*)(tab->slices_x[ctrl]); 
-    CHUNK_OBJ* ctrl_slice_z = (CHUNK_OBJ*)(tab->slices_z[ctrl]); 
-    CHUNK_OBJ* targ_slice_x = (CHUNK_OBJ*)(tab->slices_x[targ]); 
-    CHUNK_OBJ* targ_slice_z = (CHUNK_OBJ*)(tab->slices_z[targ]); 
-    CHUNK_OBJ* slice_r = (CHUNK_OBJ*)(tab->phases); 
-
-    size_t i;
-    // TODO the compiler isn't able to avx this section of code itself, CNOT appears to be near instant while CZ is non-trivial
-    #pragma omp parallel private(i)
-    { 
-        #ifdef __GNUC__
-        #ifndef __clang__
-        #pragma omp for simd
-        #endif
-        #endif
-        for (i = 0; i < tab->slice_len; i++)
-        {
-            __atomic_fetch_xor(slice_r + i, (
-                  (targ_slice_x[i] & targ_slice_z[i]) 
-                ^ (ctrl_slice_x[i] & targ_slice_x[i] & ~(targ_slice_z[i] ^ ctrl_slice_z[i]))
-                ^ ((targ_slice_z[i] ^ ctrl_slice_x[i]) & targ_slice_x[i])
-                ), __ATOMIC_RELAXED);
-            targ_slice_z[i] ^= ctrl_slice_x[i];
-            ctrl_slice_z[i] ^= targ_slice_x[i];
-        }  
-    }
-}
+//void tableau_CZ(tableau_t* tab, const size_t ctrl, const size_t targ)
+//{
+//    /* CZ = H_b CNOT H_b 
+//     * H : (r ^= x.z; x <-> z) 
+//     * CNOT a, b: ( 
+//     *     r ^= x_a & z_b & ~(x_b ^ z_a);
+//     *     x_b ^= x_a;
+//     *     z_a ^= z_b) 
+//     *
+//     * H:
+//     * r_1 = r_0 ^ x_b.z_b 
+//     * x_a1 = x_a0
+//     * x_b1 = z_b0 
+//     * z_a1 = z_a0
+//     * z_b1 = x_b0 
+//     *
+//     * CNOT:
+//     * r_2 = r_1 ^ (x_a0 & z_b1 & ~(x_b1 ^ z_a0))
+//     * r_2 = r_0 ^ (x_b0 & z.b0) ^ (x_a0 & x_b0 & ~(z_b0 ^ z_a0))
+//     * x_a2 = x_a1
+//     * x_a2 = x_a0 
+//     * x_b2 = x_b1 ^ x_a1
+//     * x_b2 = z_b0 ^ x_a0
+//     * z_a2 = z_a1 ^ z_b1 
+//     * z_a2 = z_a0 ^ x_b0 
+//     * z_b2 = z_b1
+//     * z_b2 = x_b0
+//     *
+//     * H: 
+//     * r_3 = r_2 ^ (x_b2 & z_b2)  
+//     * r_3 = r_0 ^ (x_b0 & z_b0) ^ (x_a0 & x_b0 & ~(z_b0 ^ z_a0)) ^ ((z_b0 ^ x_a0) & x_b0); 
+//     * x_a3 = x_a2 = x_a0 
+//     * x_b3 = z_b2 = x_b0 
+//     * z_a3 = z_a2 = z_a0 ^ x_b0 
+//     * z_b3 = x_b2 = z_b0 ^ x_a0 
+//     *
+//     */ 
+//
+//    CHUNK_OBJ* ctrl_slice_x = (CHUNK_OBJ*)(tab->slices_x[ctrl]); 
+//    CHUNK_OBJ* ctrl_slice_z = (CHUNK_OBJ*)(tab->slices_z[ctrl]); 
+//    CHUNK_OBJ* targ_slice_x = (CHUNK_OBJ*)(tab->slices_x[targ]); 
+//    CHUNK_OBJ* targ_slice_z = (CHUNK_OBJ*)(tab->slices_z[targ]); 
+//    CHUNK_OBJ* slice_r = (CHUNK_OBJ*)(tab->phases); 
+//
+//    size_t i;
+//    // TODO the compiler isn't able to avx this section of code itself, CNOT appears to be near instant while CZ is non-trivial
+//    #pragma omp parallel private(i)
+//    { 
+//        #ifdef __GNUC__
+//        #ifndef __clang__
+//        #pragma omp for simd
+//        #endif
+//        #endif
+//        for (i = 0; i < tab->slice_len; i++)
+//        {
+//            __atomic_fetch_xor(slice_r + i, (
+//                  (targ_slice_x[i] & targ_slice_z[i]) 
+//                ^ (ctrl_slice_x[i] & targ_slice_x[i] & ~(targ_slice_z[i] ^ ctrl_slice_z[i]))
+//                ^ ((targ_slice_z[i] ^ ctrl_slice_x[i]) & targ_slice_x[i])
+//                ), __ATOMIC_RELAXED);
+//            targ_slice_z[i] ^= ctrl_slice_x[i];
+//            ctrl_slice_z[i] ^= targ_slice_x[i];
+//        }  
+//    }
+//}

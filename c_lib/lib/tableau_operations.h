@@ -3,6 +3,13 @@
 
 #include <stdatomic.h>
 
+#include <emmintrin.h>
+#include <smmintrin.h>
+#include <immintrin.h>
+
+#include <x86gprintrin.h>
+
+
 #include "omp.h"
 #include "tableau.h"
 #include "instructions.h"

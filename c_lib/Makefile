@@ -29,13 +29,16 @@ SRCFILES := $(wildcard ${SRCDIR}/*.c)
 OBJFILES := $(patsubst ${SRCDIR}/%.c, ${BUILDDIR}/%.o, ${SRCFILES})
 COND_OBJFILES := ${OBJFILES} 
 
+SIMD_SRCFILES := $(wildcard ${SRCDIR}/simd/*.c)
+SIMD_OBJFILES := $(patsubst ${SRCDIR}/%.c, ${BUILDDIR}/%.o, ${SIMD_SRCFILES})
+OBJFILES += ${SIMD_OBJFILES}
+
 # Transpose requires disabling some loop mangling
 # The loop vectorisation flags don't mesh well with the casts between pointer types
-TRANSPOSE := simd_transpose
 TRANSPOSE_TEST := test_transpose
-TRANSPOSE_CFLAGS := -march=native -O2 -fno-tree-loop-vectorize -fno-peel-loops
-TRANSPOSE_CFLAGS += -fgcse-after-reload -fipa-cp-clone -floop-interchange -floop-unroll-and-jam -fpredictive-commoning -fsplit-loops -fsplit-paths -ftree-loop-distribution -ftree-partial-pre -funswitch-loops -fvect-cost-model=dynamic -fversion-loops-for-strides  
-TRANSPOSE_CFLAGS_CLANG := -march=native -O1
+SIMD_CFLAGS := -march=native -O2 -fno-tree-loop-vectorize -fno-peel-loops
+SIMD_CFLAGS += -fgcse-after-reload -fipa-cp-clone -floop-interchange -floop-unroll-and-jam -fpredictive-commoning -fsplit-loops -fsplit-paths -ftree-loop-distribution -ftree-partial-pre -funswitch-loops -fvect-cost-model=dynamic -fversion-loops-for-strides  
+SIMD_CFLAGS_CLANG := -march=native -O1
 
 # Test Files
 TEST_SRCFILES := $(wildcard ${TEST_SRCDIR}/*.c)
@@ -52,10 +55,6 @@ LINK_LIBS := -L${PAULI_TRACKER_LIB} -Wl,-Bstatic -l${PAULI_TRACKER_CLIB} -Wl,-Bd
 
 LIBS += -I${PAULI_TRACKER_HEADERS} 
 
-MBQC_SCHEDULER_DIR := mbqc_scheduling
-MBQC_SCHEDULER_RUSTLIB_DIR := ${MBQC_SCHEDULER_DIR}/mbqc_scheduling 
-MBQC_SCHEDULER_LIB := ${MBQC_SCHEDULER_RUSTLIB_DIR}/target/release/libmbqc_scheduling.rlib
-
 # Benchmark Files
 BENCHMARK_SRCFILES := $(wildcard ${BENCHMARK_SRCDIR}/*.c)
 BENCHMARK_RUNNERS := $(patsubst ${BENCHMARK_SRCDIR}/%.c, ${BENCHMARK_DIR}/%.out, ${BENCHMARK_SRCFILES})
@@ -66,7 +65,6 @@ BENCHMARK_RUNNERS := $(patsubst ${BENCHMARK_SRCDIR}/%.c, ${BENCHMARK_DIR}/%.out,
 .PHONY: benchmark benchmarks
 .PHONY: pandora_api
 .PHONY: ${PAULI_TRACKER}
-.PHONY: ${MBQC_SCHEDULER}
 
 
 # Build Rules
@@ -101,8 +99,10 @@ benchmarks: ${TARGET} ${BUILDDIR} ${OBJFILES} ${BENCHMARK_RUNNERS}
 
 ${BUILDDIR} :
 	mkdir -p ${BUILDDIR}
+	mkdir -p ${BUILDDIR}/simd
 
-${TARGET} : ${BUILDDIR} ${OBJFILES} ${COND_OBJFILES} ${PAULI_TRACKER_LIB} ${MBQC_SCHEDULER_LIB} 
+
+${TARGET} : ${BUILDDIR} ${OBJFILES} ${COND_OBJFILES} ${PAULI_TRACKER_LIB}
 	${CC} ${CFLAGS} ${TARGET_FLAGS} -o $@ ${COND_OBJFILES} ${LINK_LIBS} ${LIBS}  
 
 # Compilation of the transpose operation
@@ -115,7 +115,6 @@ endif
 
 # Dependent libraries
 pauli_tracker: ${PAULI_TRACKER_LIB}
-mbqc_scheduling: ${MBQC_SCHEDULER_LIB}
 
 ${PAULI_TRACKER_LIB}: 
 	cd ${PAULI_TRACKER_DIR}; make all
@@ -124,6 +123,9 @@ ${MBQC_SCHEDULER_LIB}:
 	@echo PASS
 	#cd ${MBQC_SCHEDULER_RUSTLIB_DIR}; cargo build --release
 
+${BUILDDIR}/simd/%.o : ${SRCDIR}/simd/%.c
+	${CC} $^ ${CFLAGS} ${SIMD_CFLAGS} ${LINK_LIBS} ${LIBS} -c -o $@ 
+
 ${BUILDDIR}/%.o : ${SRCDIR}/%.c
 	${CC} $^ ${CFLAGS} ${LINK_LIBS} ${LIBS} -c -o $@ 
 
@@ -131,7 +133,7 @@ ${TESTDIR}/%.out : ${OBJFILES} ${TEST_SRCDIR}/%.c
 	${CC} $^ ${CFLAGS} ${LINK_LIBS} ${TEST_LIBS} ${LIBS} -o $@ 
 
 ${TESTDIR}/${TEST_TRANSPOSE}.out : ${OBJFILES} ${TEST_SRCDIR}/${TEST_TRANSPOSE}.c 
-	${CC} $^ ${CFLAGS} ${TRANSPOSE_CFLAGS} ${LINK_LIBS} ${LIBS} -o $@ 
+	${CC} $^ ${CFLAGS} ${SIMD_CFLAGS} ${LINK_LIBS} ${LIBS} -o $@ 
 
 ${BENCHMARK_DIR}/%.out : ${OBJFILES} ${BENCHMARK_SRCDIR}/%.c 
 	${CC} $^ ${CFLAGS} ${LINK_LIBS} ${LIBS} -o $@
@@ -145,4 +147,3 @@ clean:
 	rm -rf ${TESTDIR}/*.out
 	rm -rf ${BENCHMARK_DIR}/*.out
 	cd ${PAULI_TRACKER_DIR}; make clean
-	cd ${MBQC_SCHEDULER_RUSTLIB_DIR}; cargo clean
