@@ -5,6 +5,7 @@
 #include "instructions.h"
 #include "tableau_operations.h"
 #include "widget.h"
+#include "pauli_tracker.h"
 
 /*
  * parse_instruction_block

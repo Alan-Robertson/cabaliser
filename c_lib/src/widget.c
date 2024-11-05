@@ -8,6 +8,9 @@
  */
 widget_t* widget_create(const size_t initial_qubits, const size_t max_qubits)
 {
+    // At some point these will be distinct
+    size_t input_qubits = initial_qubits;
+
     widget_t* wid = (widget_t*)malloc(sizeof(widget_t));  
     wid->n_initial_qubits = initial_qubits;
     wid->n_qubits = initial_qubits;
@@ -16,6 +19,7 @@ widget_t* widget_create(const size_t initial_qubits, const size_t max_qubits)
     wid->queue = clifford_queue_create(max_qubits);
     wid->q_map = qubit_map_create(initial_qubits, max_qubits); 
     wid->pauli_tracker = pauli_tracker_create(max_qubits);
+    wid->pauli_tracker_input = pauli_tracker_create(max_qubits + input_qubits);
 
     return wid;
 }
@@ -31,6 +35,7 @@ void widget_destroy(widget_t* wid)
     clifford_queue_destroy(wid->queue);
     qubit_map_destroy(wid->q_map);
     pauli_tracker_destroy(wid->pauli_tracker);
+    pauli_tracker_destroy(wid->pauli_tracker_input);
     free(wid);
 }
 

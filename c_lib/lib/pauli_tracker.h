@@ -7,6 +7,8 @@
 #include "lib_pauli_tracker.h" 
 #include "lib_pauli_tracker_cliffords.h" 
 
+#define INPUT_TRACKING(widget, target) (widget->n_initial_qubits + target) 
+
 struct pauli_frame_t
 {
     size_t len;

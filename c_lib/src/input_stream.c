@@ -18,6 +18,8 @@ void __inline_local_clifford_gate(
 
     // Pauli Correction Tracking
     PAULI_TRACKER_LOCAL(inst->opcode)(wid->pauli_tracker, target);
+    PAULI_TRACKER_LOCAL(inst->opcode)(wid->pauli_tracker_input, INPUT_TRACKING(wid, target));
+
     return;
 } 
 
@@ -64,7 +66,11 @@ void __inline_non_local_clifford_gate(
 
     // Pauli Correction Tracking
     PAULI_TRACKER_NON_LOCAL(inst->opcode)(wid->pauli_tracker, ctrl, targ);
-
+    PAULI_TRACKER_NON_LOCAL(inst->opcode)(
+        wid->pauli_tracker_input,
+        INPUT_TRACKING(wid, ctrl),
+        INPUT_TRACKING(wid, targ)
+    );
     return;
 } 
 
@@ -169,9 +175,11 @@ void teleport_input(widget_t* wid)
 
         // Fix up the map, we should now be indexing off the target qubit  
         wid->q_map[i] += wid->n_initial_qubits;      
-        // TODO: Stop proxying the input qubits like this 
-        // pauli_track_z(wid->pauli_tracker, i, wid->n_initial_qubits + i);
-    
+
+        // Tracking input measurement corrections
+        pauli_track_z(wid->pauli_tracker_input, i, INPUT_TRACKING(wid, wid->n_initial_qubits + i));
+
+        // Tracking the intermediary state qubit measurement correction 
         pauli_track_x(wid->pauli_tracker, i, wid->n_initial_qubits + i);
     }
 

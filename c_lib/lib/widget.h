@@ -22,6 +22,7 @@ struct widget_t {
     struct clifford_queue_t* queue;
     qubit_map_t* q_map;
     void* pauli_tracker;
+    void* pauli_tracker_input; 
 };
 typedef struct widget_t widget_t;
 
