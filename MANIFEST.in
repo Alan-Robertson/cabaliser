@@ -1,1 +1,1 @@
-include c_lib/lib_cabaliser.so
+include src/cabaliser/lib_cabaliser.so
