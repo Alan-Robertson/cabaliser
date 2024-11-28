@@ -7,6 +7,9 @@
 #define LOCAL_CLIFFORD_MASK ((uint8_t)(1 << 5)) 
 #define NON_LOCAL_CLIFFORD_MASK ((uint8_t)(1 << 6)) 
 #define RZ_MASK ((uint8_t)(1 << 7)) 
+
+#define MEASUREMENT_CONDITIONED_MASK = ((uint8_t)((1 << 6) | (1 << 7)))    
+
 #define N_LOCAL_CLIFFORDS 24 
 #define N_NON_LOCAL_CLIFFORDS 2 
 
@@ -14,6 +17,8 @@
 #define N_NON_LOCAL_CLIFFORD_INSTRUCTIONS (2)
 
 #define INSTRUCTION_TYPE_MASK (LOCAL_CLIFFORD_MASK | NON_LOCAL_CLIFFORD_MASK | RZ_MASK) 
+#define INSTRUCTION_TYPE(instruction) ((uint8_t)(instruction >> 5)) 
+
 #define INSTRUCTION_OPERATOR_MASK (~INSTRUCTION_TYPE_MASK) 
 
 #define _I_ (0x00 | LOCAL_CLIFFORD_MASK)
@@ -49,6 +54,10 @@
 
 #define _NOP_ (0xff) 
 
+#define _MCX_ = (0x01 | MEASUREMENT_CONDITIONED_MASK)
+#define _MCY_ = (0x02 | MEASUREMENT_CONDITIONED_MASK)
+#define _MCZ_ = (0x03 | MEASUREMENT_CONDITIONED_MASK)
+
 
 /*
  * instruction_struct
@@ -81,6 +90,14 @@ struct rz_instruction
     // As each non-Clifford results in a teleportation, we should saturate memory bounds before 
     // this limit is reached   
 };
+
+
+struct measurement_conditioned_instruction
+{
+    instruction_t opcode; // Type of operation is encoded in opcode 
+    uint32_t ctrl;  
+    uint32_t targ;
+}; 
 
 /* 
  * instruction_stream

@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 CC := gcc 
 OMPFLAG := -fopenmp
-CFLAGS := -Werror -Wvla -Wall --warn-no-unused-variable ${OMPFLAG}
+CFLAGS := -Werror -Wvla -Wall --warn-no-unused-variable -Wunused-result ${OMPFLAG}
 
 # Optimisation Flags
 CFLAGS += -Ofast -fPIC
@@ -88,8 +88,10 @@ debug_L1: test
 debug: CFLAGS += -fopt-info -fopt-info-loop -fopt-info-loop-missed -fopt-info-vec -fopt-info-vec-missed
 debug: test 
 
+tests: test
+test: all
 test : CFLAGS += -g
-tests : test pandora_test ${PAULI_TRACKER_LIB}
+#tests : test pandora_test ${PAULI_TRACKER_LIB}
 test: ${BUILDDIR} ${OBJFILES} ${TEST_RUNNERS} ${PANDORA_TEST_RUNNERS} 
 
 
@@ -100,7 +102,6 @@ benchmarks: ${TARGET} ${BUILDDIR} ${OBJFILES} ${BENCHMARK_RUNNERS}
 ${BUILDDIR} :
 	mkdir -p ${BUILDDIR}
 	mkdir -p ${BUILDDIR}/simd
-
 
 ${TARGET} : ${BUILDDIR} ${OBJFILES} ${COND_OBJFILES} ${PAULI_TRACKER_LIB}
 	${CC} ${CFLAGS} ${TARGET_FLAGS} -o $@ ${COND_OBJFILES} ${LINK_LIBS} ${LIBS}  

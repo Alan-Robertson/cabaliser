@@ -20,6 +20,9 @@ class SingleQubitOperationType(Structure):
     def __str__(self):
         return self.__repr__()
 
+    def max_qubits_index(self):
+        return int(self.arg)
+
 
 def SingleQubitOperation(arr, idx, opcode, arg):
     '''
@@ -49,6 +52,9 @@ class TwoQubitOperationType(Structure):
 
     def __str__(self):
         return self.__repr__()
+
+    def max_qubits_index(self):
+        return max(int(self.arg), int(self.targ))
 
 
 def TwoQubitOperation(arr, idx: int, opcode: c_byte, ctrl: int, targ: int):
@@ -81,6 +87,9 @@ class RzQubitOperationType(Structure):
 
     def __str__(self):
         return self.__repr__()
+
+    def max_qubits_index(self):
+        return int(self.arg)
 
 
 def RzOperation(arr, i, opcode, arg, tag):
@@ -115,3 +124,7 @@ class OperationType(Union):
         if opcode in TWO_QUBIT_GATES:
             return self.two_qubits.__repr__()
         return self.rz.__repr__()
+
+    def is_rz(self):
+        return self.single.opcode < 0
+

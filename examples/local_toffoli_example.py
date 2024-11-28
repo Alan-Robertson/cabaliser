@@ -51,9 +51,9 @@ for opcode, args in toffoli:
     ops.append(opcode, *args)
 
 # Apply operation on widget
-#wid(ops)
+wid(ops)
 
 # Decompose widget
-#wid.decompose()
+wid.decompose()
 
-#print(wid.json())
+print(wid.json())

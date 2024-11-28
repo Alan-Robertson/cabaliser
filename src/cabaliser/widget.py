@@ -14,6 +14,7 @@ from cabaliser.schedule_footprint import schedule_footprint
 from cabaliser.utils import deref
 
 from cabaliser.exceptions import WidgetNotDecomposedException, WidgetDecomposedException
+from cabaliser import local_simulator
 
 from cabaliser.lib_cabaliser import lib
 # Override return type
@@ -131,7 +132,7 @@ class Widget():
         '''
         obj = {
                'n_qubits': self.n_qubits,
-               'statenodes': list(range(self.n_qubits)),
+               'statenodes': list(range(self.n_initial_qubits)),
                'adjacencies': {i: self.get_adjacencies(i).to_list() for i in range(self.n_qubits)},
                'local_cliffords': self.get_local_cliffords().to_list(
                     to_string=local_clifford_to_string),
@@ -279,6 +280,14 @@ class Widget():
         lib.pandora_n_qubits(db_name)
 
         lib.pandora_load_db(self.widget, db_name)
+
+    @require_decomposed
+    def to_sim(self, *input_states, table=None):
+        '''
+            to_sim
+            Simulates the widget
+        '''
+        return local_simulator.simulate_widget(self, *input_states, table=table)
 
     def tableau_print(self):
         '''

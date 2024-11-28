@@ -5,7 +5,7 @@
 from ctypes import POINTER, c_size_t, c_uint32, c_void_p
 from types import GeneratorType
 
-from cabaliser.utils import deref, INF
+from cabaliser.utils import deref, INF, void_p
 
 from cabaliser.structs import ScheduleDependencyType, PauliCorrectionType
 from cabaliser.io_array_wrappers import ScheduleDependency, PauliCorrection, InvMapper
@@ -14,14 +14,16 @@ from cabaliser.lib_cabaliser import lib
 lib.lib_pauli_n_layers.restype = c_size_t
 lib.lib_pauli_n_dependents.restype = c_size_t
 
-lib.lib_pauli_tracker_partial_order_graph.restype = c_void_p  # Opaque Pointer
+lib.lib_pauli_graph_to_layer.restype = void_p
+
+lib.lib_pauli_tracker_partial_order_graph.restype = void_p  # Opaque Pointer
 lib.lib_pauli_layer_to_dependent_node.restype = POINTER(ScheduleDependencyType)
 
-lib.lib_pauli_tracker_create_pauli_corrections.restype = c_void_p  # Opaque Pointer
+lib.lib_pauli_tracker_create_pauli_corrections.restype = void_p  # Opaque Pointer
 lib.lib_pauli_tracker_get_pauli_corrections.restype = POINTER(PauliCorrectionType)
 lib.lib_pauli_tracker_get_correction_table_len.restype = c_size_t
 
-lib.lib_pauli_tracker_get_inv_mapper.restype = c_void_p  # Opaque Pointer
+lib.lib_pauli_tracker_get_inv_mapper.restype = void_p  # Opaque Pointer
 
 
 class PauliTracker:

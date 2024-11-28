@@ -88,15 +88,11 @@ tableau_t* tableau_create(const size_t n_qubits)
     tab->orientation = COL_MAJOR;
     tab->phases = phases;
 
-    // Set up slice pointers 
-    uint8_t* ptr_z = (uint8_t*)z_start;
-    uint8_t* ptr_x = (uint8_t*)x_start;
-
-    #pragma omp parallel for 
+    #pragma omp parallel for  
     for (size_t i = 0; i < n_qubits; i++)
     {   
-        ptr_z = z_start + (i * slice_len_bytes);
-        ptr_x = x_start + (i * slice_len_bytes);
+        uint8_t* ptr_z = z_start + (i * slice_len_bytes);
+        uint8_t* ptr_x = x_start + (i * slice_len_bytes);
 
         tab->slices_z[i] = (tableau_slice_p)ptr_z; 
         // One write per cache line entry, should be collision free 

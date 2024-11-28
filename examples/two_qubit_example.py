@@ -41,4 +41,4 @@ wid(ops)
 
 # Decompose widget
 wid.decompose()
-wid.json()
+print(wid.json())

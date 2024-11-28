@@ -5,7 +5,7 @@ A graph state compiler written in C.
 (Name is pending review and new suggestions are more than welcome)
 
 Most of what you want is in the `c_lib` directory
-The Python side of the code provides a thin wrapper around the C code 
+The Python side of the code provides a thin wrapper around the C code.
 
 
 ## Dependencies: ##
@@ -14,6 +14,10 @@ The Python side of the code provides a thin wrapper around the C code
 - Various operations assume that your CPU supports `bmi2` and `avx2` instructions along with some collection of atomic operations. M1 family chipsets with rosetta support may not satisfy this.
 - `postgresql-libs, libpqxx` or equivalent packages that provides libqp headers for pandora integration
 - `rustc` is required to compile the Pauli Tracker library  
+- Python should be at least 3.10
+  - numpy is required
+  - pytest is reccomended
+
 
 ## Installation ##
 
@@ -31,3 +35,12 @@ TODO: Invoke make from buildtools
 
 To compile the Pandora integration you will need the appropriate package that provides the `libpq-fe.h` headers for your system.
 On arch this is `postgresql-libs`.
+
+## Known Issues ## 
+
+Python pre-3.10 handled class methods, functions and decorator methods differently, as a result Python >= 3.10 is required.
+
+Python's ctypes casting has edge cases that cast objects to `int32`, which may result in segmentation faults when trying to use ctypes pointers with other library functions.
+
+
+

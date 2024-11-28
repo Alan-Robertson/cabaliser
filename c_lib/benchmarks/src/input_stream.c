@@ -84,7 +84,10 @@ int main(int argc, char** argv)
      
     srand(seed);
 
-    instruction_stream_benchmark(tableau_size, n_gates);
+    //instruction_stream_u* inst = create_instruction_stream(tableau_size, n_gates);
+    //free(inst);
+
+    //instruction_stream_benchmark(tableau_size, n_gates);
 
     return 0;
 }
