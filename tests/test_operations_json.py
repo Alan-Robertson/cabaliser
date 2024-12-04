@@ -5,12 +5,10 @@ from cabaliser import gates
 from cabaliser.operation_sequence import OperationSequence 
 from cabaliser.widget import Widget
 from cabaliser import local_simulator 
-from functools import reduce
 
-MAX_CLIFFORD_DEPTH = 2
 EPS = 1e-7
 N_REPETITIONS = 100
-class OperationTest(unittest.TestCase):
+class OperationJSONTest(unittest.TestCase):
 
     def test_identity(self): 
         '''
@@ -41,15 +39,16 @@ class OperationTest(unittest.TestCase):
 
         for _ in range(N_REPETITIONS):
             input_state = local_simulator.state_prep(*list(np.random.random(2)))
-            widget_state = local_simulator.simulate_widget(wid, input_state, trace_graph=False)
+            widget_state = local_simulator.simulate_dict_as_widget(json, input_state, trace_graph=False)
        
             zero_state = local_simulator.zero_state 
             effective_state = input_state
             embedded_state = local_simulator.kr(*([zero_state] * 2 * n_inputs), effective_state) 
             traced_state = local_simulator.trace_out_graph(wid, widget_state)
-                     
+                                                                                              
             assert (np.abs(embedded_state - widget_state) < EPS).all()
             assert (np.abs(traced_state - effective_state) < EPS).all()                              
+
 
 
     def test_hadamard(self): 
@@ -79,7 +78,7 @@ class OperationTest(unittest.TestCase):
 
         for _ in range(N_REPETITIONS):
             input_state = local_simulator.state_prep(*list(np.random.random(2)))
-            widget_state = local_simulator.simulate_widget(wid, input_state, trace_graph=False)
+            widget_state = local_simulator.simulate_dict_as_widget(json, input_state, trace_graph=False)
        
             # Output should be the Hadamard of the input state on qubit 2
 
@@ -120,7 +119,7 @@ class OperationTest(unittest.TestCase):
                 local_simulator.state_prep(*list(np.random.random(2))),
                 zero_state
             )
-            widget_state = local_simulator.simulate_widget(wid, input_state=input_state, trace_graph=False)
+            widget_state = local_simulator.simulate_dict_as_widget(json, input_state=input_state, trace_graph=False)
        
             # Output should be the CNOT of the input state on qubits 2 and 3 
             effective_state = (
@@ -160,7 +159,7 @@ class OperationTest(unittest.TestCase):
                 local_simulator.state_prep(*list(np.random.random(2))),
                 zero_state
             )
-            widget_state = local_simulator.simulate_widget(wid, input_state=input_state, trace_graph=False)
+            widget_state = local_simulator.simulate_dict_as_widget(json, input_state=input_state, trace_graph=False)
        
             # Output should be the CZ of the input state on qubits 2 and 3 
             effective_state = (
@@ -194,7 +193,7 @@ class OperationTest(unittest.TestCase):
 
         for _ in range(N_REPETITIONS):
             input_state = local_simulator.state_prep(*list(np.random.random(2)))
-            widget_state = local_simulator.simulate_widget(wid, input_state, trace_graph=False)
+            widget_state = local_simulator.simulate_dict_as_widget(json, input_state=input_state, trace_graph=False)
        
             # Output should be the Hadamard of the input state on qubit 2
 
@@ -230,7 +229,7 @@ class OperationTest(unittest.TestCase):
 
         for _ in range(N_REPETITIONS):
             input_state = local_simulator.state_prep(*list(np.random.random(2)))
-            widget_state = local_simulator.simulate_widget(wid, input_state, trace_graph=False)
+            widget_state = local_simulator.simulate_dict_as_widget(json, input_state=input_state, trace_graph=False)
        
             # Output should be the Hadamard of the input state on qubit 2
 
@@ -263,11 +262,12 @@ class OperationTest(unittest.TestCase):
 
         wid(ops) 
         wid.decompose()
+        json = wid.json()
 
         # Test state
         for _ in range(N_REPETITIONS):
             input_state = local_simulator.state_prep(*list(np.random.random(2)))
-            widget_state = local_simulator.simulate_widget(wid, input_state, trace_graph=False)
+            widget_state = local_simulator.simulate_dict_as_widget(json, input_state=input_state, trace_graph=False)
        
             # Output should be the Hadamard of the input state on qubit 2
 
@@ -300,11 +300,12 @@ class OperationTest(unittest.TestCase):
 
         wid(ops) 
         wid.decompose()
+        json = wid.json()
 
         # Test state
         for _ in range(N_REPETITIONS):
             input_state = local_simulator.state_prep(*list(np.random.random(2)))
-            widget_state = local_simulator.simulate_widget(wid, input_state, trace_graph=False)
+            widget_state = local_simulator.simulate_dict_as_widget(json, input_state=input_state, trace_graph=False)
        
             # Output should be the Hadamard of the input state on qubit 2
 
@@ -338,11 +339,11 @@ class OperationTest(unittest.TestCase):
 
         wid(ops) 
         wid.decompose()
-
+        json = wid.json()
         # Test state
         for _ in range(N_REPETITIONS):
             input_state = local_simulator.state_prep(*list(np.random.random(2)))
-            widget_state = local_simulator.simulate_widget(wid, input_state, trace_graph=True)
+            widget_state = local_simulator.simulate_dict_as_widget(json, input_state=input_state, trace_graph=True)
        
             # Output should be the Hadamard of the input state on qubit 2
 
@@ -367,6 +368,7 @@ class OperationTest(unittest.TestCase):
 
         wid(ops) 
         wid.decompose()
+        json = wid.json()
 
         # Test state
         for _ in range(N_REPETITIONS):
@@ -374,8 +376,8 @@ class OperationTest(unittest.TestCase):
                 *list(np.random.random(2))
             )
 
-            widget_state = local_simulator.simulate_widget(
-                 wid,
+            widget_state = local_simulator.simulate_dict_as_widget(
+                 json,
                  input_state=input_state,
                  trace_graph=True
             )
@@ -387,36 +389,13 @@ class OperationTest(unittest.TestCase):
             assert (np.abs(effective_state - widget_state) < EPS).all()
 
             # Apply the widget again 
-            widget_state = local_simulator.simulate_widget(
-                 wid,
+            widget_state = local_simulator.simulate_dict_as_widget(
+                 json,
                  input_state=widget_state,
                  trace_graph=True
             )
             assert (np.abs(input_state - widget_state) < EPS).all()
 
 
-def cmp_gates(gate_a, gate_b, eps=1e-5):
-    '''
-        Testing gate equivalence
-    '''
-    tol = int(-1 * np.log10(eps))
-    n_qubits = int(np.log2(gate_a.shape[0]))
-    
-    consts = None
-    for basis in range(1 << n_qubits):
-        basis_state = np.zeros(1 << n_qubits, dtype=np.complex128)  
-        basis_state[basis] = 1 
-
-        state = np.round(gate_a.transpose().conj() @ gate_b @ basis_state, tol) 
-        if sum(map(lambda x: (x > eps), state)) > 1: 
-            return False
-        if consts is None:     
-            consts = state[basis] 
-        if any(map(lambda x: np.abs(x[0] - consts * x[1]) > eps, zip(state, basis_state))):
-            return False
-    return True
-
-
 if __name__ == '__main__':
-    #OperationTest().test_random_local_cliffords()
     unittest.main()

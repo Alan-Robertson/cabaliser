@@ -4,8 +4,10 @@
 
 #include "instructions.h"
 #include "tableau_operations.h"
+#include "conditional_operations.h"
 #include "widget.h"
 #include "pauli_tracker.h"
+
 
 /*
  * parse_instruction_block
@@ -33,10 +35,11 @@ void apply_local_cliffords(widget_t* wid);
  * teleport_input
  * Sets the widget up to accept teleported inputs
  * :: wid : widget_t* :: Widget on which to teleport inputs 
+ * :: n_input_qubits : size_t :: Number of input qubits 
+ * Argument ordering is [input_qubits][other_qubits][teleported_inputs]
  * This just applies a hadamard to the first $n$ qubits, then performs pairwise CNOT operations between qubits $i$ and $n + i$  
  * This operation should be called before any gates are passed
  */
-void teleport_input(widget_t* wid);
-
+void teleport_input(widget_t* wid, size_t n_input_qubits);
 
 #endif

@@ -21,7 +21,10 @@ void widget_get_adjacencies_api(const widget_t* wid, const size_t target_qubit, 
  */
 void widget_destroy_adjacencies(struct adjacency_obj* adj)
 {
-    free(adj->adjacencies);
+    if (adj->adjacencies != NULL) 
+    {
+        free(adj->adjacencies);
+    }
 }
 
 /*

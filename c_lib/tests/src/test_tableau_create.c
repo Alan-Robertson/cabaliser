@@ -1,6 +1,13 @@
 #include "tableau.h"
 #include <assert.h>
 
+void test_tableau_mem(const size_t n_qubits)
+{
+    // Valgrind test to ensure that all tableau memory is destroyed
+    tableau_t* tab = tableau_create(n_qubits);
+    tableau_destroy(tab);
+}
+
 void test_tableau_create(const size_t n_qubits)
 {
     tableau_t* tab = tableau_create(n_qubits);
@@ -37,10 +44,10 @@ int main()
     // Test for small tableaus
     // These all fit in a single cache line chunk 
     for (size_t n_qubits = 1;
-
          n_qubits < 256;
          n_qubits++)
     {
+        test_tableau_mem(n_qubits);
         test_tableau_create(n_qubits);
     }
 

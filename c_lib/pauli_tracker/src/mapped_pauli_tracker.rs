@@ -132,6 +132,20 @@ extern "C" fn lib_pauli_track_x(mapped_pauli_tracker: &mut MappedPauliTracker, m
     mapped_pauli_tracker.pauli_tracker.track_x(measurement_target);
 }
 
+/*
+ * pauli_track_y
+ * Add a row to the pauli tracker object with a 'Y' at the target qubit  
+ * All other locations will be the identity
+ * :: pauli_tracker : &mut MappedPauliTracker :: Pauli tracker object  
+ * :: measured_qubit : usize :: The qubit being measured 
+ * :: measurement_target : usize :: The qubit with the conditional pauli 
+ * Acts in place on the Pauli tracker object
+ */
+#[no_mangle]
+extern "C" fn lib_pauli_track_y(mapped_pauli_tracker: &mut MappedPauliTracker, measured_qubit: usize, measurement_target: usize) {
+    mapped_pauli_tracker.mapper.push(measured_qubit);
+    mapped_pauli_tracker.pauli_tracker.track_y(measurement_target);
+}
 
 /*
  * pauli_track_z

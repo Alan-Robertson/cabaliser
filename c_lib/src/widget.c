@@ -96,7 +96,15 @@ struct adjacency_obj widget_get_adjacencies(const widget_t* wid, const size_t ta
     }
     
     // This is always a smaller allocation and so setting this variable should do nothing
-    adj.adjacencies = realloc(adj.adjacencies, adj.n_adjacent * sizeof(uint32_t));
+    if (adj.n_adjacent > 0) 
+    {
+        adj.adjacencies = realloc(adj.adjacencies, adj.n_adjacent * sizeof(uint32_t));
+    }
+    else
+    {
+        free(adj.adjacencies);
+        adj.adjacencies = NULL;
+    }
     return adj;
 }
 

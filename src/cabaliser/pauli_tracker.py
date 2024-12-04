@@ -5,7 +5,7 @@
 from ctypes import POINTER, c_size_t, c_uint32, c_void_p
 from types import GeneratorType
 
-from cabaliser.utils import deref, INF
+from cabaliser.utils import deref, INF, void_p
 
 from cabaliser.structs import ScheduleDependencyType, PauliCorrectionType
 from cabaliser.io_array_wrappers import ScheduleDependency, PauliCorrection, InvMapper
@@ -14,14 +14,16 @@ from cabaliser.lib_cabaliser import lib
 lib.lib_pauli_n_layers.restype = c_size_t
 lib.lib_pauli_n_dependents.restype = c_size_t
 
-lib.lib_pauli_tracker_partial_order_graph.restype = c_void_p  # Opaque Pointer
+lib.lib_pauli_graph_to_layer.restype = void_p
+
+lib.lib_pauli_tracker_partial_order_graph.restype = void_p  # Opaque Pointer
 lib.lib_pauli_layer_to_dependent_node.restype = POINTER(ScheduleDependencyType)
 
-lib.lib_pauli_tracker_create_pauli_corrections.restype = c_void_p  # Opaque Pointer
+lib.lib_pauli_tracker_create_pauli_corrections.restype = void_p  # Opaque Pointer
 lib.lib_pauli_tracker_get_pauli_corrections.restype = POINTER(PauliCorrectionType)
 lib.lib_pauli_tracker_get_correction_table_len.restype = c_size_t
 
-lib.lib_pauli_tracker_get_inv_mapper.restype = c_void_p  # Opaque Pointer
+lib.lib_pauli_tracker_get_inv_mapper.restype = void_p  # Opaque Pointer
 
 
 class PauliTracker:
@@ -112,7 +114,7 @@ class PauliTracker:
 
         node = deref(node_ptr)
 
-        return ScheduleDependency(node.len, qubit_index, node.arr, node_ptr=node)
+        return ScheduleDependency(node.len, qubit_index, node.arr, node_ptr=node_ptr)
 
     def __iter__(self):
         if self.measurement_schedule is None:
@@ -190,7 +192,7 @@ class PauliTracker:
         return self.__get_correction(index)
 
     @get_correction_ptr
-    def get_pauli_corrections(self, fmt=lambda x: x.to_dict()):
+    def get_pauli_corrections(self, idx=None, fmt=lambda x: x.to_dict()):
         '''
             Returns an iterator of corrections
             :: fmt : lambda :: Format as to_list, to_dict or to_tuple
@@ -199,7 +201,9 @@ class PauliTracker:
             self.corrections = list(
                 fmt(self.__get_correction(idx)) for idx in range(self._get_correction_table_len())
             )
-        return self.corrections
+        if idx is None:
+            return self.corrections
+        return self.corrections[idx][idx]
 
     def _get_correction_table_len(self):
         return lib.lib_pauli_tracker_get_correction_table_len(self.corrections_ptr)
@@ -214,3 +218,7 @@ class PauliTracker:
             lib.lib_pauli_tracker_get_pauli_corrections(self.corrections_ptr, index),
             self.max_qubit
         )
+
+    def __del__(self):
+        if self.graph_ptr is not None:
+            lib.lib_pauli_tracker_graph_destroy(self.graph_ptr)

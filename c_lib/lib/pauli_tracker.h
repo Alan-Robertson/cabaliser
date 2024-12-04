@@ -51,6 +51,19 @@ void pauli_track_x(
     uintptr_t target_qubit);
 
 /*
+ * pauli_track_y
+ * :: tracker : void* :: Opaque pointer to rust tracker object 
+ * :: uintptr_t : measured_qubit :: Qubit that was measured 
+ * :: target_qubit : uintptr_t :: Target of the correction operator
+ * Adds a tracking term for the target qubit depending on the measurement result 
+ */
+void pauli_track_y(
+    void* tracker, 
+    uintptr_t measured_qubit,
+    uintptr_t target_qubit);
+
+
+/*
  * pauli_track_z
  * :: tracker : void* :: Opaque pointer to rust tracker object 
  * :: uintptr_t : measured_qubit :: Qubit that was measured 

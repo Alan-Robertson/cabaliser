@@ -463,6 +463,43 @@ void test_cz_2()
     return;
 }
 
+/*
+ * Test: 
+ * -H-.-H-+--
+ *    |   |
+ * ---.---.--
+ *  Is kr(I, I)
+ */
+void test_cz_3()
+{
+    tableau_t* tab = tableau_random_create();
+    for (size_t i = 0; i < sizeof(size_t) - 1; i++)
+    {
+        const size_t val_x = tab->slices_x[i][0];  
+        const size_t val_z = tab->slices_z[i][0];  
+        const size_t val_r = tab->phases[0];  
+
+        const size_t val_x_nxt = tab->slices_x[i + 1][0];  
+        const size_t val_z_nxt = tab->slices_z[i + 1][0];  
+
+        tableau_H(tab, i);
+        tableau_CZ(tab, i, i + 1);
+        tableau_H(tab, i);
+        tableau_CNOT(tab, i + 1, i);
+
+        assert(val_x == tab->slices_x[i][0]);  
+        assert(val_z == tab->slices_z[i][0]);  
+
+        assert(val_x_nxt == tab->slices_x[i + 1][0]);  
+        assert(val_z_nxt == tab->slices_z[i + 1][0]);  
+
+        assert(val_r == tab->phases[0]);  
+    }
+    tableau_destroy(tab);
+    return;
+}
+
+
 void test_non_local()
 {
     test_cnot_1();
@@ -470,6 +507,7 @@ void test_non_local()
     test_cnot_3();
     test_cz_1();
     test_cz_2();
+    test_cz_3();
 }
 
 int main()

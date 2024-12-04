@@ -57,6 +57,19 @@ class QubitArray:
         '''
         return self.n_qubits
 
+    def _set_list(self, lst): 
+        '''
+            Helper function for setting the list
+            Should only be called by the appropriate child classes 
+        '''
+        self.__list = lst
+
+    def _get_list(self):
+        '''
+            Helper function to get the internal list object
+        '''
+        return self.__list
+
     def to_list(self, cache=True):
         '''
             Converts the underlying array to a Python list

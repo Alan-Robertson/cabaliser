@@ -114,6 +114,54 @@ void __inline_rz_gate(
     return;
 }
 
+void (*conditional_instruction_switch[N_INSTRUCTION_TYPES])(widget_t*, size_t, size_t) = {
+        conditional_I, // 0x00
+        conditional_x, // 0x01
+        conditional_y, // 0x02
+        conditional_z, // 0x03
+        NULL, // 0x04
+        NULL, // 0x05
+        NULL, // 0x06
+        NULL, // 0x07
+};
+
+/*
+ * conditional_instruction 
+ * Applies a conditional Pauli operation
+ * :: wid : widget_t* :: The widget in question 
+ * :: inst : cond_pauli_instruction* :: Conditional Pauli gate 
+ * Compilation fails if the number of qubits exceeds some maximum 
+ */
+static inline
+void __inline_conditional_instruction(
+    widget_t* wid,
+    struct conditional_instruction* inst) 
+{
+    
+    const size_t ctrl = WMAP_LOOKUP(wid, inst->ctrl);
+    const size_t targ = WMAP_LOOKUP(wid, inst->targ);
+    conditional_instruction_switch[
+       INSTRUCTION_OP_MASK & inst->opcode
+    ](wid, ctrl, targ); 
+
+    wid->queue->non_cliffords[ctrl] = BARE_MEASUREMENT_TAG;
+
+    return;
+}
+
+
+// Table of indirections  
+void (*instruction_switch[N_INSTRUCTION_TYPES])(widget_t*, void*) = {
+        (void (*)(widget_t*, void*))NULL, // 0x00
+        (void (*)(widget_t*, void*))__inline_local_clifford_gate, // 0x01
+        (void (*)(widget_t*, void*))__inline_non_local_clifford_gate, // 0x02
+        (void (*)(widget_t*, void*))NULL, // 0x03
+        (void (*)(widget_t*, void*))__inline_rz_gate, // 0x04
+        (void (*)(widget_t*, void*))NULL, // 0x05
+        (void (*)(widget_t*, void*))__inline_conditional_instruction, // 0x06
+        (void (*)(widget_t*, void*))NULL, // 0x07
+};
+
 /*
  * parse_instruction_block
  * Parses a block of instructions 
@@ -130,21 +178,9 @@ void parse_instruction_block(
     #pragma GCC unroll 8
     for (size_t i = 0; i < n_instructions; i++)
     {
-
-        // The switch is the masked opcode, picking the three highest bits
-        switch ((instructions + i)->instruction & INSTRUCTION_TYPE_MASK)  
-        {
-        case LOCAL_CLIFFORD_MASK:
-            __inline_local_clifford_gate(wid, (struct single_qubit_instruction*)(instructions + i)); 
-            break; 
-        case NON_LOCAL_CLIFFORD_MASK:
-            __inline_non_local_clifford_gate(wid, (struct two_qubit_instruction*)(instructions + i)); 
-            break;
-        case RZ_MASK:
-            // Non-local Clifford operation
-            __inline_rz_gate(wid, (struct rz_instruction*) instructions + i);
-            break;
-        }
+        instruction_switch[
+            INSTRUCTION_TYPE((instructions + i)->instruction) 
+            ](wid, instructions + i);
     }
     return;
 }
@@ -153,19 +189,21 @@ void parse_instruction_block(
  * teleport_input
  * Sets the widget up to accept teleported inputs
  * :: wid : widget_t* :: Widget on which to teleport inputs 
+ * :: n_input_qubits : size_t :: Number of input qubits 
+ * Argument ordering is [input_qubits][other_qubits][teleported_inputs]
  * This just applies a hadamard to the first $n$ qubits, then performs pairwise CNOT operations between qubits $i$ and $n + i$  
  * This operation should be called before any gates are passed
  */
-void teleport_input(widget_t* wid)
+void teleport_input(widget_t* wid, size_t n_input_qubits)
 {
     // Check that we have sufficient memory for this operation
-    assert(wid->max_qubits > 2 * wid->n_initial_qubits);
+    assert(wid->max_qubits >= wid->n_initial_qubits + n_input_qubits);
 
     // Double the number of initial qubits 
-    wid->n_qubits *= 2;
+    wid->n_qubits += n_input_qubits;
     
     // This could be replaced with a different tableau preparation step
-    for (size_t i = 0; i < wid->n_initial_qubits; i++)
+    for (size_t i = 0; i < n_input_qubits; i++)
     {
         tableau_H(wid->tableau, i);
         tableau_H(wid->tableau, i + wid->n_initial_qubits);

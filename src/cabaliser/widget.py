@@ -14,6 +14,7 @@ from cabaliser.schedule_footprint import schedule_footprint
 from cabaliser.utils import deref
 
 from cabaliser.exceptions import WidgetNotDecomposedException, WidgetDecomposedException
+from cabaliser import local_simulator
 
 from cabaliser.lib_cabaliser import lib
 # Override return type
@@ -25,18 +26,30 @@ class Widget():
         Widget object
         Exposes an API to the cabaliser c_lib's widget object
     '''
-    def __init__(self, n_qubits: int, n_qubits_max: int, teleport_input: bool = True):
+    def __init__(self, n_qubits: int, n_qubits_max: int, teleport_input: bool = True, n_inputs: int=None):
         '''
             __init__
             Constructor for the widget
             Allocates a large tableau
+            :: n_qubits : int :: Initial number of qubits, "width" of the widget  
+            :: n_qubits_max : int :: Maximum size of the widget 
+            :: teleport_input : bool :: Whether the inputs should be teleported
+            :: n_inputs : int :: Optional, If the number of inputs differs from the size of the register   
         '''
         self.decomposed = False
+
+        if n_inputs is None:
+            n_inputs = n_qubits
+        elif not (n_inputs <= n_qubits):
+            raise IndexError("More inputs than qubits")
+
+        self.n_inputs = n_inputs
+
         self.widget = lib.widget_create(n_qubits, n_qubits_max)
         self.teleport_input = teleport_input
 
         if self.teleport_input:
-            lib.teleport_input(self.widget)
+            lib.teleport_input(self.widget, self.n_inputs)
         else:
             lib.pauli_tracker_disable()
 
@@ -205,7 +218,7 @@ class Widget():
         return self.measurement_tags
 
     @require_decomposed
-    def get_io_map(self):
+    def get_io_map(self, idx=None):
         '''
             get_io_map
             Returns a wrapper around an array of measurements
@@ -214,9 +227,13 @@ class Widget():
             io_map = POINTER(IOMapType)()
             ptr = POINTER(IOMapType)(io_map)
             lib.widget_get_io_map_api(self.widget, ptr)
-            self.io_map = IOMap(self.get_n_initial_qubits(), io_map)
 
-        return self.io_map
+            # In case any of these objects have been measured out
+            measurement_tags = self.get_measurement_tags()
+            self.io_map = IOMap(self.get_n_initial_qubits(), io_map, measurement_tags)
+        if idx is None: 
+            return self.io_map
+        return self.io_map[idx]
 
     @require_decomposed
     def get_adjacencies(self, qubit: int) -> AdjacencyType:
@@ -256,11 +273,11 @@ class Widget():
         self.pauli_tracker.schedule(max_qubit=self.n_qubits)
 
     @require_decomposed
-    def get_pauli_corrections(self):
+    def get_pauli_corrections(self, idx=None):
         '''
             Dispatch method to get pauli corrections from pauli tracker wrapper
         '''
-        return self.pauli_tracker.get_pauli_corrections()
+        return self.pauli_tracker.get_pauli_corrections(idx=idx)
 
     @require_decomposed
     def get_schedule(self):
@@ -279,6 +296,14 @@ class Widget():
         lib.pandora_n_qubits(db_name)
 
         lib.pandora_load_db(self.widget, db_name)
+
+    @require_decomposed
+    def to_sim(self, *input_states, table=None):
+        '''
+            to_sim
+            Simulates the widget
+        '''
+        return local_simulator.simulate_widget(self, *input_states, table=table)
 
     def tableau_print(self):
         '''

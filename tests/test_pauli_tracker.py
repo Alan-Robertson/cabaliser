@@ -11,6 +11,9 @@ from cabaliser.operation_sequence import OperationSequence
 from cabaliser.widget import Widget
 from cabaliser.exceptions import WidgetNotDecomposedException
 
+if __name__ != '__main__':
+    def print(*args, **kwargs):
+        pass
 
 # Rz tags
 _I_ = 0

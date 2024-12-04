@@ -67,11 +67,14 @@ BENCHMARK_RUNNERS := $(patsubst ${BENCHMARK_SRCDIR}/%.c, ${BENCHMARK_DIR}/%.out,
 # Build Rules
 all : ${TARGET} ${BUILDDIR}
 
-include pandora_api/Makefile 
 
-pandora : COND_OBJFILES += ${PANDORA_OBJFILES} 
+
+include pandora_api/Makefile 
 pandora : LIBS += ${PANDORA_LIBS} 
+pandora : PANDORA_LIBS += -I${PAULI_TRACKER_HEADERS} 
+pandora : COND_OBJFILES += ${PANDORA_OBJFILES} 
 pandora : pandora_api all
+	@echo ${LIBS}
 
 debug_L3: CFLAGS += -DDEBUG -DDEBUG_LEVEL=3
 debug_L3: test 

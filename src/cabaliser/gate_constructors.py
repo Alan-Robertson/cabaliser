@@ -3,8 +3,20 @@
 '''
 from ctypes import c_int32, c_float, POINTER
 
-from cabaliser.gates import RZ
+from cabaliser.gates import RZ, MEAS
 
+
+def measure(targ: int) -> tuple:
+    '''
+        Measure a target qubit
+    '''
+    return (MEAS, (targ, targ))
+
+def measure_seq(*targs) -> list:
+    '''
+        Independently measures a set of qubits
+    '''
+    return list(map(measure, targs))
 
 def RZ_angle(targ: int, angle: float) -> tuple:
     '''

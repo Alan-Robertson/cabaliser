@@ -18,8 +18,9 @@ void test_create_destroy()
  */
 void test_widget()
 {
-    widget_t* wid = widget_create(1, 3);
-    teleport_input(wid);
+    size_t n_qubits = 1;
+    widget_t* wid = widget_create(n_qubits, 3);
+    teleport_input(wid, n_qubits);
 
     void* graph = lib_pauli_tracker_partial_order_graph(wid->pauli_tracker);  
     

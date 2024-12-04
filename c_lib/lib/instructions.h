@@ -14,6 +14,8 @@ typedef struct clifford_queue_t clifford_queue_t;
 #include "consts.h"
 #include "widget.h"
 
+#define N_INSTRUCTION_TYPES (8)
+
 #define LOCAL_CLIFFORD_LEFT(left, right) (SINGLE_QUBIT_CLIFFORD_MAP[(left & INSTRUCTION_OPERATOR_MASK) * N_LOCAL_CLIFFORDS + (right & INSTRUCTION_OPERATOR_MASK)])
 
 #define LOCAL_CLIFFORD_RIGHT(left, right) (SINGLE_QUBIT_CLIFFORD_MAP_RIGHT[(left & INSTRUCTION_OPERATOR_MASK) * N_LOCAL_CLIFFORDS + (right & INSTRUCTION_OPERATOR_MASK)])
@@ -28,7 +30,7 @@ typedef struct clifford_queue_t clifford_queue_t;
 #define NON_LOCAL_CNOT_MAP_TARG_CTRL(clifford) (CNOT_MAP_TARG_CTRL[clifford & INSTRUCTION_OPERATOR_MASK]) 
 
 
-
+#define INSTRUCTION_OP_MASK (0x1f)
 
 /*
  * clifford_queue

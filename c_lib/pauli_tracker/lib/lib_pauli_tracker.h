@@ -44,6 +44,18 @@ void lib_pauli_tracker_graph_destroy(void* graph);
 void lib_pauli_track_x(MappedPauliTracker *pauli_tracker, uintptr_t measured_qubit, uintptr_t measurement_target);
 
 /*
+ * pauli_track_y
+ * Add a row to the pauli tracker object with a 'Y' at the target qubit  
+ * All other locations will be the identity
+ * :: lib_pauli_tracker : &mut MappedPauliTracker :: Pauli tracker object  
+ * :: measured_qubit : usize :: The qubit being measured 
+ * :: measurement_target : usize :: The qubit with the conditional pauli 
+ * Acts in place on the Pauli tracker object
+ */
+void lib_pauli_track_y(MappedPauliTracker *pauli_tracker, uintptr_t measured_qubit, uintptr_t measurement_target);
+
+
+/*
  * pauli_track_z
  * Add a row to the pauli tracker object with an 'Z' at the target qubit  
  * All other locations will be the identity
