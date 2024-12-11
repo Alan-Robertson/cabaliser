@@ -213,6 +213,54 @@ int op3(void *restrict w, void *restrict x, void *restrict y, void *restrict z, 
     return (_mm_extract_epi64(acc2, 0) +  _mm_extract_epi64(acc2, 1)) % 4;
 }
 
+int op5(void *restrict w, void *restrict x, void *restrict y, void *restrict z, size_t n_bytes) {
+    __m256i pos = _mm256_setzero_si256();
+    __m256i neg = _mm256_setzero_si256();
+
+    __m256i acc = _mm256_setzero_si256();
+    for (size_t i = 0; i < n_bytes; i+=32) {
+        __m256i a = _mm256_loadu_si256(w + i);
+        __m256i b = _mm256_loadu_si256(x + i);
+        __m256i c = _mm256_loadu_si256(y + i);
+        __m256i d = _mm256_loadu_si256(z + i);
+
+        __m256i plus = _mm256_or_si256(
+        _mm256_andnot_si256(_mm256_or_si256(d, a), _mm256_and_si256(b, c)),
+        _mm256_and_si256(_mm256_and_si256(a, d), _mm256_xor_si256(b, c)));
+        
+        __m256i minus = _mm256_or_si256(
+        _mm256_andnot_si256(_mm256_or_si256(c, b), _mm256_and_si256(a, d)),
+        _mm256_and_si256(_mm256_and_si256(b, c), _mm256_xor_si256(a, d)));
+
+        acc ^= _mm256_and_si256(pos, plus);
+        acc ^= _mm256_and_si256(neg, minus);
+
+        pos = _mm256_xor_si256(pos, plus);
+        neg = _mm256_xor_si256(neg, minus);
+    }
+
+    uint64_t total = 0;
+
+    total += _mm_popcnt_u64(_mm256_extract_epi64(pos, 0))
+        + _mm_popcnt_u64(_mm256_extract_epi64(pos, 1))
+        + _mm_popcnt_u64(_mm256_extract_epi64(pos, 2))
+        + _mm_popcnt_u64(_mm256_extract_epi64(pos, 3));
+
+    total -= _mm_popcnt_u64(_mm256_extract_epi64(neg, 0))
+        + _mm_popcnt_u64(_mm256_extract_epi64(neg, 1))
+        + _mm_popcnt_u64(_mm256_extract_epi64(neg, 2))
+        + _mm_popcnt_u64(_mm256_extract_epi64(neg, 3));
+    
+    total += (_mm_popcnt_u64(_mm256_extract_epi64(acc, 0))
+            + _mm_popcnt_u64(_mm256_extract_epi64(acc, 1))
+            + _mm_popcnt_u64(_mm256_extract_epi64(acc, 2))
+            + _mm_popcnt_u64(_mm256_extract_epi64(acc, 3))) << 1;
+
+
+    return total % 4;
+}
+
+
 #define TEST_SIZE 8384
 int main(int argc, char const *argv[])
 {
@@ -254,6 +302,8 @@ int main(int argc, char const *argv[])
     int op2b_val = 0;
     int op2c_val = 0;
     int op3_val = 0;
+    int op5_val = 0;
+
     double start, end;
 
     start = clock();
@@ -298,6 +348,13 @@ int main(int argc, char const *argv[])
     }
     end = clock();
     printf("3 %d %lf\n", op3_val, (end - start)/CLOCKS_PER_SEC);
+
+    start = clock();
+    for (int i = 0; i < 10000; i++) {
+        op5_val += op5(a, b, c, d, TEST_SIZE);
+    }
+    end = clock();
+    printf("5 %d %lf\n", op5_val, (end - start)/CLOCKS_PER_SEC);
 
     return 0;
 }
