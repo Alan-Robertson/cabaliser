@@ -35,20 +35,22 @@ BENCH_MSG=${LAST_ARG}
 START_DATETIME=$(date  +"%Y%m%d_%H%M%S");
 NAME="stat-{EXE}"
 OUTPUT_PATH=output/$START_DATETIME-$NAME
-OUTPUT_NAME=stat-{PARAM_OUTFILE}.txt
+OUTPUT_NAME=stat-{EXE}-{PARAM_OUTFILE}.csv
 
 PERF_EVENTS="task-clock,context-switches,cpu-migrations,page-faults,cycles,instructions,uops_issued.any,uops_executed.thread,mem_inst_retired.any"
 
 FILEPATH=$OUTPUT_PATH/$OUTPUT_NAME;
 
-cp -f ../{EXE}.out ./
 mkdir -p $OUTPUT_PATH
 
 echo "Running Perf Stat"
 {ENV} perf stat -o $OUTPUT_NAME -x ',' \
 	-e $PERF_EVENTS ./{EXE}.out {VAR_REFS}
 
+END_DATETIME=$(date  +"%Y%m%d_%H%M%S");
 echo "Testing Note: $BENCH_MSG" | cat - $OUTPUT_NAME > $FILEPATH
+
+echo "$START_DATETIME,$END_DATETIME,$EXE,$BENCH_MSG,$FILEPATH" >> output/stat_tracker.csv" 
 
 rm $OUTPUT_NAME
 echo "Completed"
