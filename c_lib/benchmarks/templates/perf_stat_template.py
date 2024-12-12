@@ -37,7 +37,7 @@ NAME="stat-{EXE}"
 OUTPUT_PATH=output/$START_DATETIME-$NAME
 OUTPUT_NAME=stat-{PARAM_OUTFILE}.txt
 
-PERF_FIELDS="task-clock,context-switches,cpu-migrations,page-faults,cycles,instructions,uops_issued.any,uops_executed.thread,mem_inst_retired.any"
+PERF_EVENTS="task-clock,context-switches,cpu-migrations,page-faults,cycles,instructions,uops_issued.any,uops_executed.thread,mem_inst_retired.any"
 
 FILEPATH=$OUTPUT_PATH/$OUTPUT_NAME;
 
