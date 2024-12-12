@@ -29,3 +29,13 @@ Example 2 (omitting environment string for setting `OMP_NUM_THREADS`):
 ```
 python perf_stat_template.py decomp.out OMP_NUM_THREADS=$THREADS QBIT GATES RANDOM THREADS
 ```
+
+## Results
+
+The results of the execution are stored in `output/` folder along with it being
+encoded by the date and time (start and end time). Since the same folder is used by
+all scripts executing in the current directory, additional information is held
+in a `*_tracker.csv` file, (`*`), being a placeholder for `stat` and `record` which
+will append the latest execution to the end of the csv.
+
+
