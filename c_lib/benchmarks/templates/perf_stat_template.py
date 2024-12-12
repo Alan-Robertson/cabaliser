@@ -22,7 +22,7 @@ if len(sys.argv) < 3:
 PERF_STAT_TEMPLATE_STR = """
 #!/bin/bash
 
-if [ $# -ne {PARAM_COUNT} ]; then
+if [ $# -lt {PARAM_COUNT} ]; then
 	echo "Perf Stat - {EXE}"
 	echo "Please supply: {PARAM_NAMES}"
 	exit 1
@@ -50,7 +50,7 @@ echo "Running Perf Stat"
 END_DATETIME=$(date  +"%Y%m%d_%H%M%S");
 echo "Testing Note: $BENCH_MSG" | cat - $OUTPUT_NAME > $FILEPATH
 
-echo "$START_DATETIME,$END_DATETIME,$EXE,$BENCH_MSG,$FILEPATH" >> output/stat_tracker.csv" 
+echo "$START_DATETIME,$END_DATETIME,{EXE},$BENCH_MSG,$FILEPATH" >> output/stat_tracker.csv 
 
 rm $OUTPUT_NAME
 echo "Completed"
@@ -73,7 +73,7 @@ output_str = PERF_STAT_TEMPLATE_STR.format(
     ENV = env_str,
     PARAM_COUNT = param_count,
     PARAM_NAMES = " ".join(param_names),
-    PARAM_OUTFILE = "-".join(param_names),
+    PARAM_OUTFILE = "-".join(param_var_refs),
     VAR_GEN = "\n".join(param_var_gen),
     VAR_REFS = " ".join(param_var_refs),
     LAST_ARG = param_count + 1)
