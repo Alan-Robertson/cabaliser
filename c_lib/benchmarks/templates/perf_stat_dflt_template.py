@@ -19,11 +19,11 @@ if len(sys.argv) < 3:
         else:
             print("No environment variable set, emitting empty string")
 
-PERF_RECORD_TEMPLATE_STR = """
+PERF_STAT_TEMPLATE_STR = """
 #!/bin/bash
 
 if [ $# -lt {PARAM_COUNT} ]; then
-	echo "Perf Record - {EXE}"
+	echo "Perf Stat - {EXE}"
 	echo "Please supply: {PARAM_NAMES}"
 	exit 1
 fi
@@ -33,24 +33,23 @@ fi
 BENCH_MSG=${LAST_ARG}
 
 START_DATETIME=$(date  +"%Y%m%d_%H%M%S");
-NAME="record-{EXE}"
+NAME="stat-{EXE}"
 OUTPUT_PATH=output/$START_DATETIME-$NAME
-OUTPUT_NAME=record-{EXE}-{PARAM_OUTFILE}.txt
+OUTPUT_NAME=stat-{EXE}-{PARAM_OUTFILE}.csv
 
-PERF_FIELDS="overhead,overhead_us,overhead_sys,pid,mispredict,symbol,parent,cpu,srcline,sample"
+
 FILEPATH=$OUTPUT_PATH/$OUTPUT_NAME;
 
-cp -f ../{EXE}.out ./
 mkdir -p $OUTPUT_PATH
 
-echo "Running Perf Record"
-{ENV} perf record  ./{EXE}.out {VAR_REFS}
+echo "Running Perf Stat"
+{ENV} perf stat -o $OUTPUT_NAME -x ',' ./{EXE}.out {VAR_REFS}
 
-perf report --fields $PERF_FIELDS --stdio > $FILEPATH
-
+END_DATETIME=$(date  +"%Y%m%d_%H%M%S");
 echo "Testing Note: $BENCH_MSG" | cat - $OUTPUT_NAME > $FILEPATH
 
-echo "$START_DATETIME,$END_DATETIME,{EXE},$BENCH_MSG,$FILEPATH" >> output/record_tracker.csv 
+echo "$START_DATETIME,$END_DATETIME,{EXE},$BENCH_MSG,$FILEPATH" >> output/stat_tracker.csv 
+
 rm $OUTPUT_NAME
 echo "Completed"
 """
@@ -67,7 +66,7 @@ param_var_refs = [ "${}".format(pname)
                   for pname in param_names ]
 
 
-output_str = PERF_RECORD_TEMPLATE_STR.format(
+output_str = PERF_STAT_TEMPLATE_STR.format(
     EXE = exe_str,
     ENV = env_str,
     PARAM_COUNT = param_count,
