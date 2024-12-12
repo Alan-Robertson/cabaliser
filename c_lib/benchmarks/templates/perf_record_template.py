@@ -40,7 +40,6 @@ OUTPUT_NAME=record-{EXE}-{PARAM_OUTFILE}.txt
 PERF_FIELDS="overhead,overhead_us,overhead_sys,pid,mispredict,symbol,parent,cpu,srcline,sample"
 FILEPATH=$OUTPUT_PATH/$OUTPUT_NAME;
 
-cp -f ../{EXE}.out ./
 mkdir -p $OUTPUT_PATH
 
 echo "Running Perf Record"
