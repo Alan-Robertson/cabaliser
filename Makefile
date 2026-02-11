@@ -21,9 +21,9 @@ test:
 clean:
 	cd ${LIB};  \
 	${MAKE} clean
-	rm ${LIB}/lib_cabaliser.so || echo "lib_cabaliser.so shared object file not built" 
+	rm ${LIB}/lib_cabaliser.so || echo "lib_cabaliser.so shared object file not built"
 	pip uninstall -y ${PACKAGE}
-	
+
 update:
 	git pull
 	${MAKE} build
@@ -32,4 +32,4 @@ lib_cabaliser.so: ${LIB}/lib_cabaliser.so
 
 ${LIB}/%.so:
 	cd ${LIB};  \
-	make
+	${MAKE}

@@ -6,50 +6,50 @@ CFLAGS := -Werror -Wvla -Wall -Wno-unused --warn-no-unused-variable -Wunused-res
 # Determine architecture based on uname -m
 UNAME_M := $(shell uname -m)
 ifeq ($(UNAME_M),x86_64)
-	ARCHITECTURE := x86_64
+ARCHITECTURE := x86_64
 # This is required because uname -m can return anything of the form arm<specific version>
 else ifneq ($(filter arm% aarch64,$(UNAME_M)),)
-	ARCHITECTURE := arm
+ARCHITECTURE := arm
 else
-	ARCHITECTURE := UNKNOWN
-	$(error Architecture $(UNAME_M) is not recognised)
+ARCHITECTURE := UNKNOWN
+$(error Architecture $(UNAME_M) is not recognised)
 endif
 
 # Determine platform based on uname -s
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
-	PLATFORM := OSX
-	CC := clang
+PLATFORM := OSX
+CC := clang
 else ifeq ($(UNAME_S),Linux)
-	PLATFORM := Linux
+PLATFORM := Linux
 else
-	PLATFORM := UNKNOWN
-	$(error Platform $(UNAME_S) is unsupported)
+PLATFORM := UNKNOWN
+$(error Platform $(UNAME_S) is unsupported)
 endif
 
 # Optimisation Flags
 ifeq ($(CC),clang)
-	CFLAGS += -O3 -ffast-math -fPIC
+CFLAGS += -O3 -ffast-math -fPIC
 else
-	CFLAGS += -Ofast -fPIC
+CFLAGS += -Ofast -fPIC
 endif
 
 ifeq ($(ARCHITECTURE),x86_64)
-	CFLAGS += -mavx2 -mlzcnt -mbmi2
+CFLAGS += -mavx2 -mlzcnt -mbmi2
 endif
 
 TARGET := lib_cabaliser.so
 ifeq ($(PLATFORM),OSX)
-	TARGET_FLAGS := -shared -Wl,-install_name,${TARGET}
+TARGET_FLAGS := -shared -Wl,-install_name,${TARGET}
 else
-	TARGET_FLAGS := -shared -Wl,-soname,${TARGET}
+TARGET_FLAGS := -shared -Wl,-soname,${TARGET}
 endif
 
 SRCDIR := src
 ifneq ($(filter $(ARCHITECTURE),arm aarch64),)
-	SIMD_DIR := arm_simd
+SIMD_DIR := arm_simd
 else
-	SIMD_DIR := simd
+SIMD_DIR := simd
 endif
 LIBDIR := lib
 BUILDDIR := build
@@ -80,11 +80,11 @@ OBJFILES += ${SIMD_OBJFILES}
 # The loop vectorisation flags don't mesh well with the casts between pointer types
 SIMD_TESTS := test_transpose test_rowsum
 ifeq ($(CC),clang)
-    SIMD_CFLAGS := -march=native -O2
-    SIMD_CFLAGS += -mllvm -enable-loopinterchange -fno-slp-vectorize -fno-vectorize -mllvm -enable-unroll-and-jam -mllvm -enable-nontrivial-unswitch
+SIMD_CFLAGS := -march=native -O2
+SIMD_CFLAGS += -mllvm -enable-loopinterchange -fno-slp-vectorize -fno-vectorize -mllvm -enable-unroll-and-jam -mllvm -enable-nontrivial-unswitch
 else
-	SIMD_CFLAGS := -march=native -O2 -fno-tree-loop-vectorize -fno-peel-loops
-	SIMD_CFLAGS += -fgcse-after-reload -fipa-cp-clone -floop-interchange -floop-unroll-and-jam -fpredictive-commoning -fsplit-loops -fsplit-paths -ftree-loop-distribution -ftree-partial-pre -funswitch-loops -fvect-cost-model=dynamic -fversion-loops-for-strides
+SIMD_CFLAGS := -march=native -O2 -fno-tree-loop-vectorize -fno-peel-loops
+SIMD_CFLAGS += -fgcse-after-reload -fipa-cp-clone -floop-interchange -floop-unroll-and-jam -fpredictive-commoning -fsplit-loops -fsplit-paths -ftree-loop-distribution -ftree-partial-pre -funswitch-loops -fvect-cost-model=dynamic -fversion-loops-for-strides
 endif
 
 # Test Files
@@ -99,9 +99,9 @@ PAULI_TRACKER_LIB := $(shell pwd)/${PAULI_TRACKER_RUSTLIB_DIR}/target/release
 PAULI_TRACKER_HEADERS := ${PAULI_TRACKER_DIR}/lib
 
 ifeq ($(PLATFORM),OSX)
-	LINK_LIBS := -L${PAULI_TRACKER_LIB} -l${PAULI_TRACKER_CLIB}
+LINK_LIBS := -L${PAULI_TRACKER_LIB} -l${PAULI_TRACKER_CLIB}
 else
-	LINK_LIBS := -L${PAULI_TRACKER_LIB} -Wl,-Bstatic -l${PAULI_TRACKER_CLIB} -Wl,-Bdynamic
+LINK_LIBS := -L${PAULI_TRACKER_LIB} -Wl,-Bstatic -l${PAULI_TRACKER_CLIB} -Wl,-Bdynamic
 endif
 
 
