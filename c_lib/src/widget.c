@@ -87,8 +87,8 @@ struct adjacency_obj widget_get_adjacencies(const widget_t* wid, const size_t ta
             while (obj > 0)
             {
                 uint32_t edge =  __CHUNK_CTZ(obj);
-                obj ^= (1ull << edge);  
-                edge += i * sizeof(CHUNK_OBJ);
+                obj ^= (1ull << edge);
+                edge += i * sizeof(CHUNK_OBJ) * 8;
     
                 // Test that fetch occurs prior to addition
                 // TODO wrap in macro for multi-arch support 
